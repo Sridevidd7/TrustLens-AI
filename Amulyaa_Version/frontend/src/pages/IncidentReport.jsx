@@ -1,4 +1,0 @@
-import { useEffect, useState } from 'react';
-import { api } from '../api.js';
-import GlassPanel from '../components/GlassPanel.jsx';
-export default function IncidentReport(){const [items,setItems]=useState([]);useEffect(()=>{api.incidents().then(d=>setItems(d.incidents||[]))},[]);return <div className="page fadeIn"><div className="pageTitle"><h1>AI Incident Card</h1><p>A structured explanation for what happened, why, and how to prevent repeats.</p></div><div className="cardGrid">{items.map(i=><GlassPanel key={i.id} className="incident"><span className="severity critical">Incident</span><h2>{i.title}</h2><p><strong>What happened:</strong> {i.what_happened}</p><p><strong>Why:</strong> {i.why}</p><p><strong>Safeguard:</strong> {i.safeguard}</p><p><strong>Human decision:</strong> {i.human_decision}</p><p><strong>Prevention:</strong> {i.prevention}</p></GlassPanel>)}</div></div>}
