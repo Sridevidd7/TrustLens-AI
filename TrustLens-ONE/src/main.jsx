@@ -76,10 +76,13 @@ const fallback = {
 const navItems = [
   ['/', 'Mission Control', LayoutDashboard],
   ['/fusion', 'Fusion Engine', Network],
+  ['/readiness', 'Trust Readiness', CircleGauge],
   ['/explanation/1', 'Explanation', Sparkles],
+  ['/consensus/1', 'Agent Consensus', Bot],
   ['/courtroom/1', 'AI Courtroom', ShieldCheck],
   ['/simulation/1', 'Decision Simulator', CircleGauge],
   ['/approvals', 'Approval center', UserCheck],
+  ['/timeline', 'Trust Timeline', Clock3],
   ['/audit', 'Audit trail', FileText],
   ['/incidents', 'Incident Lab', Siren],
   ['/governance', 'Governance', Settings],
@@ -198,10 +201,13 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard data={data} offline={offline} />} />
             <Route path="/fusion" element={<FusionEngine />} />
+            <Route path="/readiness" element={<TrustReadiness data={data} />} />
             <Route path="/explanation/:id" element={<Explanation data={data} setData={setData} />} />
+            <Route path="/consensus/:id" element={<AgentConsensus data={data} />} />
             <Route path="/courtroom/:id" element={<Courtroom data={data} />} />
             <Route path="/simulation/:id" element={<Simulation data={data} setData={setData} />} />
             <Route path="/approvals" element={<Approvals data={data} setData={setData} />} />
+            <Route path="/timeline" element={<TrustTimeline data={data} />} />
             <Route path="/audit" element={<Audit data={data} setData={setData} />} />
             <Route path="/incidents" element={<IncidentLab />} />
             <Route path="/governance" element={<Governance />} />
@@ -602,6 +608,10 @@ function TrustScore() {
           <Meter label="Human oversight" n={80} />
         </div>
       </div>
+      <NavLink to="/readiness" className="block text-center mt-4 text-[11px] border-t pt-3 transition hover:opacity-80"
+        style={{ color: '#7993ff', borderColor: 'var(--divider)' }}>
+        Open readiness breakdown →
+      </NavLink>
     </div>
   )
 }
@@ -821,6 +831,10 @@ function AgentMap({ agents }) {
           </React.Fragment>
         ))}
       </div>
+      <NavLink to="/consensus/1" className="inline-flex items-center gap-1.5 mt-4 text-[11px] transition hover:opacity-80"
+        style={{ color: '#7993ff' }}>
+        Open agent consensus view <ChevronRight size={12} />
+      </NavLink>
     </section>
   )
 }
@@ -2514,6 +2528,125 @@ const fusionFallback = {
     { name: 'ExplainAI', role: 'Evidence and transparency', score: 94, status: 'online', signal: 'Grounding claims in traceable data sources' },
   ],
   guardrails: { human_veto: true, critical_dual_approval: true, append_only_audit: true, automatic_rollback: true },
+}
+
+// ---------------------------------------------------------------------------
+// Trust Readiness — a decision-level score with explainable contributing factors
+// ---------------------------------------------------------------------------
+function TrustReadiness({ data }) {
+  const avgConfidence = Math.round(data.recommendations.reduce((sum, r) => sum + r.confidence, 0) / Math.max(data.recommendations.length, 1))
+  const pillars = [
+    { label: 'Explainability', score: 94, detail: 'Evidence and limitations are visible for every recommendation.' },
+    { label: 'Source quality', score: 91, detail: 'Signals are corroborated across authoritative systems.' },
+    { label: 'Agent agreement', score: 94, detail: 'Five specialist models agree with no guardrail conflict.' },
+    { label: 'Human oversight', score: 80, detail: 'High-impact actions require an explicit human decision.' },
+  ]
+  const score = Math.round(pillars.reduce((sum, p) => sum + p.score, 0) / pillars.length)
+
+  return (
+    <Page>
+      <Header eyebrow="TRUST CONTROL" title="Trust readiness score"
+        desc="A transparent measure of whether the current decision queue is ready for accountable human action."
+        action={<span className="pill bg-emerald-500/10 text-emerald-500"><CheckCircle2 size={13} />Ready with oversight</span>} />
+      <div className="grid lg:grid-cols-[340px_1fr] gap-5">
+        <div className="card p-6 flex flex-col items-center justify-center text-center">
+          <div className="relative w-44 h-44 rounded-full flex items-center justify-center"
+            style={{ background: `conic-gradient(#46c99a 0 ${score}%, var(--alt-border) ${score}%)` }}>
+            <div className="absolute inset-[13px] rounded-full" style={{ background: 'var(--card-bg)' }} />
+            <div className="relative"><div className="text-5xl font-bold">{score}</div><div className="text-[10px] mt-1" style={{ color: 'var(--muted)' }}>OUT OF 100</div></div>
+          </div>
+          <div className="font-semibold mt-5">Decision-ready</div>
+          <p className="text-[11px] leading-relaxed mt-2" style={{ color: 'var(--muted)' }}>Strong evidence and model agreement. Human approval remains the final control.</p>
+          <div className="grid grid-cols-2 gap-2 w-full mt-5">
+            <Mini n={`${avgConfidence}%`} l="Avg confidence" />
+            <Mini n={String(data.recommendations.length)} l="Decisions assessed" />
+          </div>
+        </div>
+        <div className="space-y-3">
+          {pillars.map((p, i) => (
+            <div className="card p-5" key={p.label}>
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'var(--agent-bg)', color: '#7993ff' }}>
+                  {i === 0 ? <Sparkles size={18} /> : i === 1 ? <Database size={18} /> : i === 2 ? <Network size={18} /> : <UserCheck size={18} />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between gap-3"><div className="font-semibold text-sm">{p.label}</div><div className="font-bold text-emerald-500">{p.score}</div></div>
+                  <p className="text-[11px] mt-1" style={{ color: 'var(--muted)' }}>{p.detail}</p>
+                  <div className="h-1.5 rounded-full mt-3" style={{ background: 'var(--alt-border)' }}><div className="h-full rounded-full bg-gradient-to-r from-[#5578ff] to-[#46c99a]" style={{ width: `${p.score}%` }} /></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Page>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Agent Consensus — exposes each specialist's vote, confidence, and rationale
+// ---------------------------------------------------------------------------
+function AgentConsensus({ data }) {
+  const { id } = useParams()
+  const r = data.recommendations.find(x => x.id === +id)
+  if (!r) return <Page><div className="card p-10 text-center">Recommendation #{id} was not found.</div></Page>
+  const votes = [
+    ['Sentinel', 'Approve', Math.min(98, r.confidence + 2), 'Threat signals are active and independently corroborated.'],
+    ['PolicyGuard', 'Approve', Math.max(82, r.confidence - 1), 'The action satisfies policy; explicit human approval is required.'],
+    ['RiskGraph', 'Approve', Math.max(80, r.confidence - 3), `${r.affected} resources are inside the projected blast radius.`],
+    ['ImpactSim', 'Approve with caution', Math.max(78, r.confidence - 5), 'A staged rollout limits operational disruption.'],
+    ['ExplainAI', 'Approve', r.confidence, 'Evidence quality is high and known limitations are disclosed.'],
+  ]
+  const consensus = Math.round(votes.reduce((sum, v) => sum + v[2], 0) / votes.length)
+  return (
+    <Page>
+      <NavLink to={`/explanation/${id}`} className="inline-flex items-center gap-2 text-xs mb-5" style={{ color: 'var(--muted)' }}><ArrowLeft size={14} />Back to explanation</NavLink>
+      <Header eyebrow={`${r.category} · AGENT CONSENSUS`} title={r.title} desc="Inspect each specialist model before accepting the combined recommendation." />
+      <div className="card p-5 mb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+          <div><div className="label mb-2">Consensus verdict</div><div className="text-xl font-bold">Proceed with human approval</div><p className="text-[11px] mt-2" style={{ color: 'var(--muted)' }}>4 approve · 1 approves with caution · 0 oppose</p></div>
+          <div className="text-center"><div className="text-4xl font-bold text-emerald-500">{consensus}%</div><div className="text-[10px]" style={{ color: 'var(--muted)' }}>weighted consensus</div></div>
+        </div>
+      </div>
+      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {votes.map(([name, vote, confidence, rationale]) => (
+          <div className="card p-5" key={name}>
+            <div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'var(--agent-bg)' }}><Bot size={17} style={{ color: '#7993ff' }} /></div><div><div className="font-semibold text-sm">{name}</div><div className="text-[10px] text-emerald-500">{vote}</div></div><span className="ml-auto font-bold text-sm">{confidence}%</span></div>
+            <p className="text-[11px] leading-relaxed mt-4" style={{ color: 'var(--muted)' }}>{rationale}</p>
+            <div className="h-1.5 rounded-full mt-4" style={{ background: 'var(--alt-border)' }}><div className="h-full rounded-full bg-emerald-500" style={{ width: `${confidence}%` }} /></div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-5 flex justify-end"><NavLink to={`/courtroom/${id}`} className="inline-flex items-center gap-2 bg-[#3156d9] text-white px-4 py-2.5 rounded-lg text-xs font-semibold">Challenge in AI Courtroom <ChevronRight size={13} /></NavLink></div>
+    </Page>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Trust Timeline — human-readable chronology layered over the audit ledger
+// ---------------------------------------------------------------------------
+function TrustTimeline({ data }) {
+  const [scope, setScope] = useState('All')
+  const humanTypes = ['approval', 'reject', 'edit', 'escalation', 'human_context']
+  const events = data.audit.filter(a => scope === 'All' || (scope === 'Human' ? humanTypes.includes(a.type) : ['ai', 'system'].includes(a.type)))
+  return (
+    <Page>
+      <Header eyebrow="ACCOUNTABILITY" title="Trust timeline" desc="Follow how evidence, AI recommendations, human context, and final decisions evolved over time."
+        action={<NavLink to="/audit" className="border px-3 py-2 rounded-lg text-xs flex items-center gap-2" style={{ borderColor: 'var(--card-border)', color: 'var(--muted)' }}><FileText size={13} />Open audit ledger</NavLink>} />
+      <div className="flex gap-2 mb-5">{['All', 'Human', 'AI & system'].map(s => <button key={s} onClick={() => setScope(s)} className="px-3 py-2 rounded-lg border text-xs" style={{ borderColor: scope === s ? '#5578ff' : 'var(--card-border)', color: scope === s ? '#7993ff' : 'var(--muted)', background: scope === s ? 'rgba(85,120,255,.08)' : 'transparent' }}>{s}</button>)}</div>
+      <div className="card p-5">
+        {events.length === 0 ? <div className="text-center py-10 text-xs" style={{ color: 'var(--muted)' }}>No events in this view.</div> : events.map((e, i) => {
+          const meta = AUDIT_TYPE_META[e.type] ?? AUDIT_TYPE_META.system
+          const Icon = meta.icon
+          return <div key={`${e.time}-${i}`} className="grid grid-cols-[72px_28px_1fr] gap-3">
+            <div className="text-[10px] pt-1 text-right font-mono" style={{ color: 'var(--muted)' }}>{e.time}</div>
+            <div className="relative flex justify-center"><div className="w-7 h-7 rounded-full flex items-center justify-center z-[1]" style={{ background: 'var(--agent-bg)', color: meta.text }}><Icon size={13} /></div>{i < events.length - 1 && <div className="absolute top-7 bottom-0 w-px" style={{ background: 'var(--divider)' }} />}</div>
+            <div className="pb-6"><div className="font-semibold text-xs">{e.action}</div><div className="text-[11px] mt-1">{e.target}</div><div className="flex flex-wrap gap-2 mt-2 text-[10px]" style={{ color: 'var(--muted)' }}><span>{e.actor}</span><span>·</span><span>{e.result}</span></div></div>
+          </div>
+        })}
+      </div>
+    </Page>
+  )
 }
 
 function FusionEngine() {

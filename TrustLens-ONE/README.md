@@ -10,6 +10,19 @@ TrustLens ONE is the consolidated, hackathon-ready version of the TrustLens proj
 
 The fusion engine weighs every model, exposes disagreement, applies non-negotiable guardrails, and keeps a human in control of high-impact actions.
 
+## Trust features
+
+- AI Courtroom with challengeable evidence and counter-arguments
+- Explainable Trust Readiness Score
+- Persisted Human Context Override
+- Approve/reject Decision Simulator
+- Filterable Trust Timeline and exportable audit ledger
+- Per-agent Consensus View with confidence and rationale
+- Expandable Ask Why reasoning
+- Lower-risk alternative actions
+- Human escalation workflow
+- Mandatory rejection reasons
+
 ## Demo flow
 
 1. Open Mission Control and run a unified analysis.
